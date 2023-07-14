@@ -33,8 +33,88 @@ exports.userRegister = async (req,res)=>{
 
    }
    catch(error){
-    req.status(401).json(error)
+    res.status(401).json(error)
    }
+}
+
+// get all users
+exports.getallusers = async (req,res)=>{
+     // get query parameter from req
+     const search = req.query.search
+     const query = {
+        fname:{$regex:search,$options:"i"}
+     }
+    try{
+        const userdata = await users.find(query)
+        res.status(200).json(userdata)
+    }
+    catch(error){
+        res.status(401).json(error)
+    }
+}
+
+// get a user
+exports.getuserdetail = async (req,res)=>{
+   
+
+    const {id} = req.params
+    try{
+        const userdata = await users.findOne({_id:id})
+        if(userdata){
+            res.status(200).json(userdata)
+        }
+        else{
+            req.status(404).json("User doesnot exist!!")
+        }
+       
+    }
+    catch(error){
+        res.status(401).json(error)
+    }
+}
+
+// editUser
+exports.editUser=async(req,res)=>{
+    const{id}=req.params
+    const {fname,lname,mobile,email,gender,location,status,user_profile}=req.body
+        // to get image url
+   const file  = req.file? req.file.filename:user_profile
+
+   try{
+    const updateUser = await users.findByIdAndUpdate({_id:id},{
+        fname,
+        lname,
+        email,
+        mobile,
+        gender,
+        status,
+        profile: file,
+        location
+    },{
+        new:true
+    })
+    await updateUser.save()
+    res.status(200).json(updateUser)
+   }
+   catch(error){
+    res.status(402).json(error)
+    console.log(error);
+   }
+}
+
+
+// deleteUser
+exports.deleteUser = async (req,res)=>{
+    const{id}=req.params
+    try{
+        const removeUser = await users.findByIdAndDelete({_id:id})
+        await removeUser.save()
+        res.status(200).json(removeUser)
+       }
+       catch(error){
+        res.status(401).json(error)
+        console.log(error);
+       }
 }
 
 
